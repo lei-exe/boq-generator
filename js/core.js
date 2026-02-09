@@ -837,4 +837,29 @@ window.addEventListener('DOMContentLoaded', () => {
         refreshAllDropdowns();
         console.log('✅ All dropdowns refreshed on page load');
     }, 500);
+
+        setTimeout(function() {
+        const mobileInputs = document.querySelectorAll('input[list]');
+        
+        mobileInputs.forEach(input => {
+            input.addEventListener('touchstart', function(e) {
+                this.focus();
+                
+                if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+                    setTimeout(() => {
+                        this.click();
+                    }, 100);
+                }
+                
+                e.preventDefault();
+            }, { passive: false });
+            
+            if (!input.getAttribute('placeholder')) {
+                input.setAttribute('placeholder', 'Tap to type or select...');
+            }
+        });
+        
+        console.log('✅ Mobile dropdown fix applied');
+    }, 800);
+    
 });
