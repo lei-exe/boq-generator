@@ -838,15 +838,32 @@ window.addEventListener('DOMContentLoaded', () => {
         console.log('✅ All dropdowns refreshed on page load');
     }, 500);
 
-    // Add this RIGHT BEFORE the closing });
-    setTimeout(() => {
-        // Mobile touch fix for dropdowns
-        document.querySelectorAll('#newCategory, .description-input').forEach(input => {
-            input.addEventListener('touchstart', function() {
+    setTimeout(function() {
+        const mobileInputs = document.querySelectorAll('input[list]');
+        
+        mobileInputs.forEach(input => {
+            // Add touch event
+            input.addEventListener('touchstart', function(e) {
                 this.focus();
-                this.click();
-            });
+                
+                // For iOS specifically
+                if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+                    setTimeout(() => {
+                        this.click();
+                    }, 100);
+                }
+                
+                e.preventDefault();
+            }, { passive: false });
+            
+            // Add placeholder text for mobile
+            if (!input.getAttribute('placeholder')) {
+                input.setAttribute('placeholder', 'Tap to type or select...');
+            }
         });
-    }, 1000);
+        
+        console.log('✅ Mobile dropdown fix applied');
+    }, 800); // Wait a bit longer for everything to load
 });
+
 
