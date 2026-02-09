@@ -814,61 +814,121 @@ window.addEventListener('DOMContentLoaded', () => {
     
     setupCategoryDropdown();
     
-    setTimeout(() => {
-        if (window.CONSTRUCTION_PRICELIST) {
-            initializeDescriptionDatalist();
+setTimeout(function() {
+        console.log('📱 Applying mobile touch fixes...');
+        
+        // FIX 1: Make category input more touchable
+        const categoryInput = document.getElementById('newCategory');
+        if (categoryInput) {
+            // Wrap category input in a tappable container
+            const categoryWrapper = document.createElement('div');
+            categoryWrapper.className = 'input-tappable w-100';
+            categoryWrapper.style.cssText = 'position: relative; cursor: text;';
             
-            setTimeout(() => {
-                updateDescriptionDropdown();
-                console.log('✅ Description dropdown loaded with custom items');
-            }, 100);
-        } else {
-            console.log('⚠️ Pricelist not loaded yet, will try again...');
-            setTimeout(() => {
-                if (window.CONSTRUCTION_PRICELIST) {
-                    initializeDescriptionDatalist();
-                    updateDescriptionDropdown();
+            categoryInput.parentNode.insertBefore(categoryWrapper, categoryInput);
+            categoryWrapper.appendChild(categoryInput);
+            
+            // Make wrapper tappable
+            categoryWrapper.addEventListener('click', function(e) {
+                if (e.target !== categoryInput) {
+                    categoryInput.focus();
                 }
-            }, 1000);
-        }
-    }, 300);
-    
-    setTimeout(() => {
-        refreshAllDropdowns();
-        console.log('✅ All dropdowns refreshed on page load');
-    }, 500);
-
-    setTimeout(function() {
-        // Fix for all text inputs on mobile
-        document.querySelectorAll('input[type="text"]').forEach(input => {
-            // Remove any event listeners that might block keyboard
-            input.onmousedown = null;
-            input.ontouchstart = null;
+            });
             
-            // Add simple touch handler
-            input.addEventListener('touchend', function(e) {
-                // Just focus, don't prevent default
-                this.focus();
-                // Don't prevent default - let browser handle keyboard
+            // Touch events for wrapper
+            categoryWrapper.addEventListener('touchstart', function(e) {
+                categoryInput.focus();
+                e.preventDefault();
+            }, { passive: false });
+            
+            // Make input itself more touchable
+            categoryInput.style.cssText = `
+                min-height: 48px;
+                padding: 12px 15px;
+                font-size: 16px;
+                width: 100%;
+                box-sizing: border-box;
+            `;
+        }
+        
+        // FIX 2: Make description inputs more touchable
+        document.querySelectorAll('.description-input').forEach((input, index) => {
+            // Wrap each description input
+            const wrapper = document.createElement('div');
+            wrapper.className = 'input-tappable w-100';
+            wrapper.style.cssText = 'position: relative; cursor: text;';
+            
+            input.parentNode.insertBefore(wrapper, input);
+            wrapper.appendChild(input);
+            
+            // Make wrapper tappable
+            wrapper.addEventListener('click', function(e) {
+                if (e.target !== input) {
+                    input.focus();
+                }
+            });
+            
+            // Touch events
+            wrapper.addEventListener('touchstart', function(e) {
+                input.focus();
+                e.preventDefault();
+            }, { passive: false });
+            
+            // Style the input
+            input.style.cssText = `
+                min-height: 44px;
+                padding: 10px 12px;
+                font-size: 16px;
+                width: 100%;
+                box-sizing: border-box;
+            `;
+            
+            // Force datalist to work on mobile
+            input.addEventListener('focus', function() {
+                // iOS fix for datalist
+                if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+                    setTimeout(() => {
+                        this.click();
+                    }, 100);
+                }
             });
         });
         
-        // Specifically for category and description
-        const specialInputs = document.querySelectorAll('#newCategory, .description-input');
-        specialInputs.forEach(input => {
-            // iOS hack for datalist inputs
-            if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
-                input.addEventListener('touchstart', function() {
-                    this.setAttribute('readonly', 'readonly');
-                    setTimeout(() => {
-                        this.removeAttribute('readonly');
-                        this.focus();
-                    }, 10);
-                });
+        // FIX 3: Make all table inputs more visible
+        document.querySelectorAll('.table input').forEach(input => {
+            input.style.cssText += `
+                font-size: 14px !important;
+                padding: 10px 8px !important;
+                height: auto !important;
+                min-height: 44px;
+            `;
+            
+            // Ensure text is visible
+            input.addEventListener('input', function() {
+                this.style.color = '#212529';
+                this.style.backgroundColor = '#fff';
+            });
+        });
+        
+        // FIX 4: Add scroll indicator for tables
+        document.querySelectorAll('.table-scroll-container').forEach(container => {
+            if (container.scrollWidth > container.clientWidth) {
+                // Add scroll hint
+                const hint = document.createElement('div');
+                hint.className = 'scroll-hint';
+                hint.innerHTML = `
+                    <div style="text-align: center; color: #666; font-size: 12px; padding: 5px 0; background: #f8f9fa; border-top: 1px solid #dee2e6;">
+                        <i class="bi bi-arrow-left-right"></i> Scroll horizontally to see all columns
+                    </div>
+                `;
+                container.appendChild(hint);
             }
         });
+        
+        console.log('✅ Mobile fixes applied successfully');
     }, 1000);
 });
+
 
 
 
