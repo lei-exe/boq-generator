@@ -839,31 +839,36 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 500);
 
     setTimeout(function() {
-        const mobileInputs = document.querySelectorAll('input[list]');
-        
-        mobileInputs.forEach(input => {
-            // Add touch event
-            input.addEventListener('touchstart', function(e) {
-                this.focus();
-                
-                // For iOS specifically
-                if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
-                    setTimeout(() => {
-                        this.click();
-                    }, 100);
-                }
-                
-                e.preventDefault();
-            }, { passive: false });
+        // Fix for all text inputs on mobile
+        document.querySelectorAll('input[type="text"]').forEach(input => {
+            // Remove any event listeners that might block keyboard
+            input.onmousedown = null;
+            input.ontouchstart = null;
             
-            // Add placeholder text for mobile
-            if (!input.getAttribute('placeholder')) {
-                input.setAttribute('placeholder', 'Tap to type or select...');
-            }
+            // Add simple touch handler
+            input.addEventListener('touchend', function(e) {
+                // Just focus, don't prevent default
+                this.focus();
+                // Don't prevent default - let browser handle keyboard
+            });
         });
         
-        console.log('✅ Mobile dropdown fix applied');
-    }, 800); // Wait a bit longer for everything to load
+        // Specifically for category and description
+        const specialInputs = document.querySelectorAll('#newCategory, .description-input');
+        specialInputs.forEach(input => {
+            // iOS hack for datalist inputs
+            if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+                input.addEventListener('touchstart', function() {
+                    this.setAttribute('readonly', 'readonly');
+                    setTimeout(() => {
+                        this.removeAttribute('readonly');
+                        this.focus();
+                    }, 10);
+                });
+            }
+        });
+    }, 1000);
 });
+
 
 
