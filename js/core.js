@@ -816,101 +816,167 @@ window.addEventListener('DOMContentLoaded', () => {
     setupCategoryDropdown();
     
     // ========================
-    // 📱 FIXED MOBILE TOUCH & TABLE ISSUES
+    // 📱 WORKING MOBILE FIX - KEYBOARD + TOUCH
     // ========================
     setTimeout(function() {
-        console.log('📱 Applying mobile fixes...');
+        console.log('📱 Applying PROPER mobile fixes...');
         
-        // FIX 1: Make category input more touchable
-        const categoryInput = document.getElementById('newCategoryName'); // FIXED: Changed from #newCategory
+        // FIX 1: CATEGORY INPUT - WORKING KEYBOARD
+        const categoryInput = document.getElementById('newCategoryName');
         if (categoryInput) {
-            // Don't wrap in div - just make it bigger
+            // Make it tappable anywhere
             categoryInput.style.cssText = `
-                min-height: 48px !important;
-                padding: 12px 15px !important;
-                font-size: 16px !important;
+                min-height: 50px !important;
+                padding: 14px 15px !important;
+                font-size: 18px !important;
                 width: 100% !important;
-                box-sizing: border-box !important;
+                cursor: text !important;
+                touch-action: manipulation !important;
             `;
             
-            // Simple touch fix
+            // THIS MAKES KEYBOARD APPEAR
             categoryInput.addEventListener('touchstart', function(e) {
+                // Focus FIRST
                 this.focus();
-            }, { passive: true });
+                
+                // iOS needs extra help
+                if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                    setTimeout(() => {
+                        // Create and dispatch click event
+                        this.click();
+                    }, 50);
+                }
+                
+                // Don't prevent default - let keyboard open
+            }, { passive: true }); // IMPORTANT: passive: true
+            
+            // Also make parent div tappable
+            const parentDiv = categoryInput.closest('.input-group') || categoryInput.parentElement;
+            if (parentDiv) {
+                parentDiv.style.cursor = 'text';
+                parentDiv.addEventListener('touchstart', function(e) {
+                    if (e.target !== categoryInput) {
+                        categoryInput.focus();
+                        categoryInput.click();
+                    }
+                }, { passive: true });
+            }
         }
         
-        // FIX 2: Make description inputs more touchable
-        document.querySelectorAll('.item-description').forEach((input, index) => { // FIXED: Changed from .description-input
-            // Style the input
+        // FIX 2: DESCRIPTION INPUTS - WORKING KEYBOARD
+        document.querySelectorAll('.item-description').forEach((input, index) => {
+            // Make big and tappable
             input.style.cssText = `
-                min-height: 44px !important;
-                padding: 10px 12px !important;
+                min-height: 46px !important;
+                padding: 12px 10px !important;
                 font-size: 16px !important;
                 width: 100% !important;
-                box-sizing: border-box !important;
+                cursor: text !important;
+                touch-action: manipulation !important;
             `;
             
-            // Simple touch fix
+            // THIS MAKES KEYBOARD APPEAR
             input.addEventListener('touchstart', function(e) {
+                // Focus immediately
                 this.focus();
+                
+                // Help iOS
+                if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                    setTimeout(() => {
+                        this.click();
+                    }, 50);
+                }
+                
+                // Let browser handle keyboard
             }, { passive: true });
+            
+            // Make table cell tappable too
+            const tableCell = input.closest('td');
+            if (tableCell) {
+                tableCell.style.cursor = 'text';
+                tableCell.addEventListener('touchstart', function(e) {
+                    if (e.target !== input) {
+                        input.focus();
+                        input.click();
+                    }
+                }, { passive: true });
+            }
         });
         
-        // FIX 3: Fix table overflow (SINGLE FIX - not duplicate)
+        // FIX 3: TABLE OVERFLOW - NO CUT OFF
         document.querySelectorAll('.table-scroll-container').forEach(container => {
-            // Force proper overflow
+            // Force scroll container
             container.style.cssText = `
                 overflow-x: auto !important;
-                max-width: 100% !important;
-                border: 1px solid #dee2e6 !important;
-                border-radius: 4px !important;
-                margin: 10px 0 !important;
+                overflow-y: hidden !important;
+                max-width: 100vw !important;
+                width: 100% !important;
+                display: block !important;
+                position: relative !important;
+                -webkit-overflow-scrolling: touch !important;
             `;
             
-            // Make table wider than container to ensure scroll
+            // Make table wider for scrolling
             const table = container.querySelector('table');
             if (table) {
-                table.style.minWidth = '900px !important';
+                table.style.minWidth = '950px !important';
+                table.style.width = '100% !important';
+                table.style.tableLayout = 'fixed !important';
             }
             
-            // Fix all inputs inside table
+            // Fix all inputs in table
             container.querySelectorAll('input').forEach(input => {
                 input.style.cssText = `
-                    max-width: 100% !important;
                     width: 100% !important;
-                    box-sizing: border-box !important;
-                    overflow: hidden !important;
-                    text-overflow: ellipsis !important;
-                    font-size: 14px !important;
-                    padding: 10px 8px !important;
+                    max-width: 100% !important;
                     min-height: 44px !important;
+                    padding: 10px 8px !important;
+                    font-size: 16px !important;
+                    box-sizing: border-box !important;
+                    display: block !important;
                 `;
             });
             
-            // Add scroll hint ONLY if not already there
-            if (!container.querySelector('.scroll-hint') && 
-                container.scrollWidth > container.clientWidth) {
-                const hint = document.createElement('div');
-                hint.className = 'scroll-hint';
-                hint.innerHTML = `
-                    <div style="
+            // Add scroll hint if needed
+            if (container.scrollWidth > container.clientWidth) {
+                const existingHint = container.querySelector('.scroll-hint');
+                if (!existingHint) {
+                    const hint = document.createElement('div');
+                    hint.className = 'scroll-hint';
+                    hint.style.cssText = `
                         text-align: center;
                         color: #666;
-                        font-size: 12px;
-                        padding: 8px 0;
+                        font-size: 13px;
+                        padding: 10px 0;
                         background: #f8f9fa;
                         border-top: 1px solid #dee2e6;
-                    ">
-                        <i class="bi bi-arrow-left-right"></i> Scroll horizontally
-                    </div>
-                `;
-                container.appendChild(hint);
+                        position: sticky;
+                        left: 0;
+                        right: 0;
+                    `;
+                    hint.innerHTML = '<i class="bi bi-arrow-left-right me-2"></i>Scroll to see all columns';
+                    container.appendChild(hint);
+                }
             }
         });
         
-        console.log('✅ Mobile fixes applied successfully');
-    }, 1000); // Single timeout, not multiple
+        console.log('✅ PROPER mobile fixes applied - keyboard should work!');
+        
+        // EXTRA: Test if keyboard works
+        setTimeout(() => {
+            console.log('Testing mobile touch...');
+            document.querySelectorAll('#newCategoryName, .item-description').forEach(input => {
+                console.log(`Input ${input.id || input.className}:`, {
+                    hasTouchListeners: input.hasAttribute('data-touch-fixed'),
+                    style: input.style.minHeight
+                });
+                input.setAttribute('data-touch-fixed', 'true');
+            });
+        }, 500);
+        
+    }, 800);
 });
+
 
 
 
