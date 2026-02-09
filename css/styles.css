@@ -11192,3 +11192,116 @@ header.masthead h1, header.masthead .h1 {
         line-height: 1.2 !important;
     }
 }
+/* ========================
+   PRICELIST MODAL MOBILE FIX
+   ======================== */
+
+/* Make modal full screen on mobile */
+@media (max-width: 768px) {
+    #pricelistModal .modal-dialog {
+        max-width: 100% !important;
+        margin: 0 !important;
+        height: 100vh !important;
+    }
+    
+    #pricelistModal .modal-content {
+        height: 100vh !important;
+        border-radius: 0 !important;
+        border: none !important;
+    }
+    
+    #pricelistModal .modal-body {
+        padding: 15px !important;
+        height: calc(100vh - 120px) !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Fix search input */
+    #pricelistModal .input-group {
+        margin-bottom: 15px !important;
+    }
+    
+    #pricelistSearch {
+        font-size: 16px !important;
+        min-height: 44px !important;
+        padding: 12px 15px !important;
+    }
+    
+    /* Fix tabs */
+    #pricelistModal .nav-tabs {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    #pricelistModal .nav-link {
+        white-space: nowrap !important;
+        font-size: 14px !important;
+        padding: 10px 15px !important;
+        min-width: 100px !important;
+    }
+    
+    /* Fix table */
+    #pricelistModal .table-responsive {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        margin: 0 -15px !important;
+        padding: 0 15px !important;
+    }
+    
+    #pricelistModal table {
+        min-width: 500px !important;
+    }
+    
+    #pricelistModal th,
+    #pricelistModal td {
+        padding: 12px 8px !important;
+        font-size: 14px !important;
+    }
+    
+    /* Fix buttons */
+    #pricelistModal .btn {
+        min-height: 44px !important;
+        padding: 12px 20px !important;
+        font-size: 16px !important;
+    }
+    
+    /* Close button positioning */
+    #pricelistModal .modal-header .btn-close {
+        margin: 0 !important;
+        padding: 15px !important;
+    }
+}
+
+/* Make modal content scrollable */
+#pricelistModal .modal-body {
+    overflow-y: auto;
+    max-height: 70vh;
+}
+
+@media (max-width: 768px) {
+    #pricelistModal .modal-body {
+        max-height: calc(100vh - 140px) !important;
+    }
+}
+
+/* Better table styling for pricelist */
+#pricelistModal table {
+    font-size: 14px;
+}
+
+#pricelistModal th {
+    background: #f8f9fa;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Make "Add to BOQ" button more visible */
+.add-to-boq-btn {
+    min-width: 100px !important;
+    white-space: nowrap !important;
+}
