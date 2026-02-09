@@ -253,86 +253,251 @@ const CONSTRUCTION_PRICELIST = {
 };
 
 function openPricelistModal() {
+    // Check if modal already exists
+    let existingModal = document.getElementById('pricelistModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
     const modal = document.createElement('div');
     modal.className = 'modal fade';
     modal.id = 'pricelistModal';
+    modal.setAttribute('data-bs-backdrop', 'static');
+    modal.setAttribute('aria-hidden', 'true');
     modal.innerHTML = `
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white">
+        <div class="modal-dialog modal-fullscreen-md-down modal-xl modal-dialog-scrollable">
+            <div class="modal-content vh-100">
+                <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">
-                        <i class="bi bi-tools me-2"></i>Construction Labor & Material Pricelist
+                        <i class="bi bi-tools me-2"></i>Construction Pricelist
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="row mb-3">
-                        <div class="col-md-12">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" id="pricelistSearch" class="form-control" placeholder="Search items (type to filter list below)...">
+                <div class="modal-body p-0 d-flex flex-column">
+                    <!-- Search Bar -->
+                    <div class="sticky-top bg-white p-3 border-bottom">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" 
+                                   id="pricelistSearch" 
+                                   class="form-control border-start-0" 
+                                   placeholder="Search items..."
+                                   style="font-size: 16px; min-height: 44px;">
+                        </div>
+                    </div>
+                    
+                    <!-- Tabs - Mobile Optimized -->
+                    <div class="border-bottom">
+                        <ul class="nav nav-tabs nav-fill flex-nowrap" id="pricelistTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active px-3 py-2" 
+                                        id="allItemsTabBtn" 
+                                        data-bs-toggle="tab" 
+                                        data-bs-target="#allItemsTabPane" 
+                                        type="button" 
+                                        role="tab"
+                                        style="font-size: 14px; white-space: nowrap;">
+                                    <i class="bi bi-grid me-1"></i>All Items
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link px-3 py-2" 
+                                        id="laborTabBtn" 
+                                        data-bs-toggle="tab" 
+                                        data-bs-target="#laborTabPane" 
+                                        type="button" 
+                                        role="tab"
+                                        style="font-size: 14px; white-space: nowrap;">
+                                    <i class="bi bi-person-badge me-1"></i>Labor
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link px-3 py-2" 
+                                        id="materialsTabBtn" 
+                                        data-bs-toggle="tab" 
+                                        data-bs-target="#materialsTabPane" 
+                                        type="button" 
+                                        role="tab"
+                                        style="font-size: 14px; white-space: nowrap;">
+                                    <i class="bi bi-box-seam me-1"></i>Materials
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Tab Content - Scrollable -->
+                    <div class="tab-content flex-grow-1 overflow-hidden" id="pricelistTabContent">
+                        <div class="tab-pane fade show active h-100" id="allItemsTabPane" role="tabpanel">
+                            <div id="allItemsContent" class="h-100 overflow-auto p-3">
+                                <!-- Content will be loaded here -->
+                            </div>
+                        </div>
+                        <div class="tab-pane fade h-100" id="laborTabPane" role="tabpanel">
+                            <div id="laborContent" class="h-100 overflow-auto p-3">
+                                <!-- Content will be loaded here -->
+                            </div>
+                        </div>
+                        <div class="tab-pane fade h-100" id="materialsTabPane" role="tabpanel">
+                            <div id="materialsContent" class="h-100 overflow-auto p-3">
+                                <!-- Content will be loaded here -->
                             </div>
                         </div>
                     </div>
                     
-                    <ul class="nav nav-tabs mb-3" id="pricelistTabs">
-                        <li class="nav-item">
-                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#allItemsTab">
-                                <i class="bi bi-list-ul me-1"></i>All Items
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#laborTab">
-                                <i class="bi bi-person-hard-hat me-1"></i>Labor Rates
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#materialsTab">
-                                <i class="bi bi-box-seam me-1"></i>Materials
-                            </button>
-                        </li>
-                    </ul>
-                    
-                    <div class="tab-content">
-                        <div class="tab-pane fade show active" id="allItemsTab">
-                            ${renderPricelistTable([...FLAT_CONSTRUCTION_PRICELIST.labor, ...FLAT_CONSTRUCTION_PRICELIST.materials])}
-                        </div>
-                        <div class="tab-pane fade" id="laborTab">
-                            ${renderPricelistTable(FLAT_CONSTRUCTION_PRICELIST.labor)}
-                        </div>
-                        <div class="tab-pane fade" id="materialsTab">
-                            ${renderPricelistTable(FLAT_CONSTRUCTION_PRICELIST.materials)}
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4 p-3 bg-light rounded">
-                        <small class="text-muted">
+                    <!-- Note -->
+                    <div class="border-top bg-light p-3">
+                        <small class="text-muted d-block">
                             <i class="bi bi-info-circle me-1"></i>
-                            <strong>Note:</strong> Prices are sample rates in Philippine Pesos (₱). 
-                            Click <span class="badge bg-success">Add to BOQ</span> to insert item into your current BOQ.
+                            Click <span class="badge bg-success">Add to BOQ</span> to insert item
                         </small>
+                        <button type="button" class="btn btn-outline-success btn-sm mt-2 w-100" onclick="addSampleBOQFromPricelist()">
+                            <i class="bi bi-plus-circle me-1"></i>Add 5 Sample Items
+                        </button>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary w-100 py-2" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Close
+                    </button>
                 </div>
             </div>
         </div>
     `;
 
     document.body.appendChild(modal);
-    const modalInstance = new bootstrap.Modal(modal);
+    const modalInstance = new bootstrap.Modal(modal, {
+        backdrop: true,
+        keyboard: true
+    });
+    
     modalInstance.show();
     
+    // Load content
     setTimeout(() => {
-        filterPricelist();
+        document.getElementById('allItemsContent').innerHTML = 
+            renderPricelistTableMobile([...FLAT_CONSTRUCTION_PRICELIST.labor, ...FLAT_CONSTRUCTION_PRICELIST.materials]);
+        document.getElementById('laborContent').innerHTML = 
+            renderPricelistTableMobile(FLAT_CONSTRUCTION_PRICELIST.labor);
+        document.getElementById('materialsContent').innerHTML = 
+            renderPricelistTableMobile(FLAT_CONSTRUCTION_PRICELIST.materials);
+        
+        // Set up search
+        const searchInput = document.getElementById('pricelistSearch');
+        if (searchInput) {
+            searchInput.addEventListener('input', filterPricelistMobile);
+        }
     }, 100);
     
-    document.getElementById('pricelistSearch').addEventListener('input', filterPricelist);
-    
+    // Clean up on close
     modal.addEventListener('hidden.bs.modal', function () {
-        document.body.removeChild(modal);
+        setTimeout(() => {
+            if (document.body.contains(modal)) {
+                document.body.removeChild(modal);
+            }
+        }, 300);
     });
+}
+
+function renderPricelistTableMobile(items) {
+    if (!items || items.length === 0) {
+        return `
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-search display-6 d-block mb-3"></i>
+                <p>No items found. Try a different search.</p>
+            </div>
+        `;
+    }
+    
+    const groupedByCategory = {};
+    items.forEach(item => {
+        if (!groupedByCategory[item.category]) {
+            groupedByCategory[item.category] = [];
+        }
+        groupedByCategory[item.category].push(item);
+    });
+
+    let html = '';
+    
+    Object.entries(groupedByCategory).forEach(([category, categoryItems]) => {
+        html += `
+            <div class="card mb-3 border shadow-sm">
+                <div class="card-header bg-light py-2">
+                    <h6 class="mb-0 fw-bold" style="font-size: 15px;">${category}</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0" style="font-size: 14px;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="min-width: 60px; font-size: 13px;">ID</th>
+                                    <th style="min-width: 200px; font-size: 13px;">Description</th>
+                                    <th style="min-width: 70px; font-size: 13px;">Unit</th>
+                                    <th style="min-width: 100px; font-size: 13px;">Rate</th>
+                                    <th style="min-width: 100px; font-size: 13px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${categoryItems.map(item => `
+                                    <tr>
+                                        <td class="fw-bold" style="font-size: 12px;">${item.id}</td>
+                                        <td style="font-size: 14px;">${item.description}</td>
+                                        <td style="font-size: 14px;">${item.unit}</td>
+                                        <td class="fw-bold text-success" style="font-size: 14px;">₱${item.rate.toLocaleString()}</td>
+                                        <td>
+                                            <button class="btn btn-success btn-sm py-1 px-2" 
+                                                    onclick="addToBOQFromPricelist('${item.id}')"
+                                                    style="font-size: 12px; white-space: nowrap;">
+                                                <i class="bi bi-plus-lg me-1"></i>Add
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    return html;
+}
+
+function filterPricelistMobile() {
+    const searchTerm = document.getElementById('pricelistSearch').value.toLowerCase().trim();
+    
+    // Get active tab content
+    let activeContentId = '';
+    if (document.querySelector('#allItemsTabPane.active')) activeContentId = 'allItemsContent';
+    if (document.querySelector('#laborTabPane.active')) activeContentId = 'laborContent';
+    if (document.querySelector('#materialsTabPane.active')) activeContentId = 'materialsContent';
+    
+    if (!activeContentId) return;
+    
+    let items = [];
+    const activeTabBtn = document.querySelector('#pricelistTabs .nav-link.active');
+    
+    if (activeTabBtn && activeTabBtn.id === 'allItemsTabBtn') {
+        items = [...FLAT_CONSTRUCTION_PRICELIST.labor, ...FLAT_CONSTRUCTION_PRICELIST.materials];
+    } else if (activeTabBtn && activeTabBtn.id === 'laborTabBtn') {
+        items = FLAT_CONSTRUCTION_PRICELIST.labor;
+    } else if (activeTabBtn && activeTabBtn.id === 'materialsTabBtn') {
+        items = FLAT_CONSTRUCTION_PRICELIST.materials;
+    }
+    
+    if (searchTerm) {
+        items = items.filter(item =>  
+            item.description.toLowerCase().includes(searchTerm) ||
+            item.category.toLowerCase().includes(searchTerm) ||
+            item.unit.toLowerCase().includes(searchTerm) ||
+            item.id.toLowerCase().includes(searchTerm) ||
+            item.type.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    document.getElementById(activeContentId).innerHTML = renderPricelistTableMobile(items);
 }
 
 function renderPricelistTable(items) {
@@ -572,7 +737,10 @@ Object.entries(CONSTRUCTION_PRICELIST).forEach(([category, items]) => {
 });
 
 window.openPricelistModal = openPricelistModal;
-window.filterPricelist = filterPricelist;
+window.filterPricelist = filterPricelistMobile; // Updated
 window.addToBOQFromPricelist = addToBOQFromPricelist;
 window.addSampleBOQFromPricelist = addSampleBOQFromPricelist;
+window.renderPricelistTableMobile = renderPricelistTableMobile;
+window.filterPricelistMobile = filterPricelistMobile;
+
 
