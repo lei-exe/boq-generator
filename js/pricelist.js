@@ -324,12 +324,10 @@ function openPricelistModal() {
     const modalInstance = new bootstrap.Modal(modal);
     modalInstance.show();
     
-    // Initialize search
     setTimeout(() => {
         filterPricelist();
     }, 100);
     
-    // Add search functionality
     document.getElementById('pricelistSearch').addEventListener('input', filterPricelist);
     
     modal.addEventListener('hidden.bs.modal', function () {
@@ -431,11 +429,11 @@ function filterPricelist() {
 
 function addSampleBOQFromPricelist() {
     const sampleItems = [
-        { ...CONSTRUCTION_PRICELIST.labor[0], qty: 5 },  // Mason
-        { ...CONSTRUCTION_PRICELIST.labor[1], qty: 3 },  // Carpenter
-        { ...CONSTRUCTION_PRICELIST.materials[0], qty: 50 }, // Cement
-        { ...CONSTRUCTION_PRICELIST.materials[3], qty: 500 }, // CHB 4"
-        { ...CONSTRUCTION_PRICELIST.materials[5], qty: 100 }, // Steel Bar #3
+        { ...CONSTRUCTION_PRICELIST.labor[0], qty: 5 },
+        { ...CONSTRUCTION_PRICELIST.labor[1], qty: 3 },
+        { ...CONSTRUCTION_PRICELIST.materials[0], qty: 50 },
+        { ...CONSTRUCTION_PRICELIST.materials[3], qty: 500 },
+        { ...CONSTRUCTION_PRICELIST.materials[5], qty: 100 },
     ];
     
     const nameInput = document.getElementById('newCategoryName');
@@ -476,7 +474,7 @@ function addSampleBOQFromPricelist() {
 }
 
 function addToBOQFromPricelist(itemId) {
-    console.log("Trying to add item ID:", itemId); // Debug log
+    console.log("Trying to add item ID:", itemId);
     let item = null;
     item = FLAT_CONSTRUCTION_PRICELIST.labor.find(i => i.id === itemId);
 
@@ -484,7 +482,7 @@ function addToBOQFromPricelist(itemId) {
         item = FLAT_CONSTRUCTION_PRICELIST.materials.find(i => i.id === itemId);
     }
     
-    console.log("Found item:", item); // Debug log
+    console.log("Found item:", item);
     
     if (!item) {
         showNotification('Item not found! Item ID: ' + itemId, 'error');
@@ -519,7 +517,7 @@ function addToBOQFromPricelist(itemId) {
     nameInput.value = originalValue;
     
     const categoryId = parseInt(categoryDiv.dataset.categoryId);
-    console.log("Adding to category ID:", categoryId); // Debug log
+    console.log("Adding to category ID:", categoryId);
     
     addItemToCategory(categoryId);
     
@@ -527,10 +525,10 @@ function addToBOQFromPricelist(itemId) {
     const newRow = tbody.lastElementChild;
     const inputs = newRow.querySelectorAll('input');
     
-    inputs[0].value = item.description; // Description
-    inputs[1].value = item.unit;        // Unit
-    inputs[2].value = 1;                // Quantity
-    inputs[3].value = item.rate;        // Rate (₱)
+    inputs[0].value = item.description;
+    inputs[1].value = item.unit;
+    inputs[2].value = 1;
+    inputs[3].value = item.rate;
     
     const quantityInput = inputs[2];
     if (quantityInput) {
@@ -573,7 +571,6 @@ Object.entries(CONSTRUCTION_PRICELIST).forEach(([category, items]) => {
     });
 });
 
-// Expose globally
 window.openPricelistModal = openPricelistModal;
 window.filterPricelist = filterPricelist;
 window.addToBOQFromPricelist = addToBOQFromPricelist;

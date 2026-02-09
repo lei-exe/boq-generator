@@ -187,7 +187,6 @@
     <!-- 3. YOUR APPLICATION SCRIPTS (in order of dependency) -->
     <!-- Core Utilities FIRST -->
     <script>
-        // Define global utility functions that other scripts depend on
         window.parseNumber = function(value) {
             return parseFloat(String(value).replace(/,/g, '')) || 0;
         };
@@ -199,7 +198,6 @@
             });
         };
         
-        // Initialize global variables
         window.categoryCount = 0;
     </script>
     
@@ -215,11 +213,9 @@
   
     <!-- 4. INITIALIZATION SCRIPT (runs after everything is loaded) -->
     <script>
-        // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function() {
             console.log('BOQ Generator initialized');
             
-            // Set up event listeners
             const taxRateInput = document.getElementById('taxRate');
             if (taxRateInput) {
                 taxRateInput.addEventListener('input', function() {
@@ -229,10 +225,7 @@
                 });
             }
             
-            // Optional: Load draft automatically
             if (typeof window.loadDraft === 'function') {
-                // Uncomment to auto-load draft on startup
-                // window.loadDraft();
             }
         });
     </script>
@@ -243,14 +236,11 @@
 <datalist id="descriptionDatalist"></datalist>
 
 <script>
-// Function to populate datalist with comprehensive construction items
 function populateDescriptionDatalist() {
     const datalist = document.getElementById('descriptionDatalist');
     const descriptions = new Set();
     
-    // Comprehensive Construction Items List
     const constructionItems = [
-        // Materials
         "Cement",
         "Sand", 
         "Coarse aggregate",
@@ -355,10 +345,8 @@ function populateDescriptionDatalist() {
         "PVC Pipe 1/2\"", "PVC Pipe 1\"", "Electrical Wire #14", "Circuit Breaker 20A"
     ];
     
-    // Add all items to set (removes duplicates)
     constructionItems.forEach(item => descriptions.add(item));
     
-    // Clear and add options
     datalist.innerHTML = '';
     Array.from(descriptions).sort().forEach(desc => {
         const option = document.createElement('option');
@@ -367,7 +355,6 @@ function populateDescriptionDatalist() {
     });
 }
 
-// Populate on page load
 document.addEventListener('DOMContentLoaded', function() {
     populateDescriptionDatalist();
     console.log('Description datalist populated with construction items');

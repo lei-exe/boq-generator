@@ -12,7 +12,6 @@ function exportPDF() {
     const projectInfo = Object.fromEntries(new FormData(form));
     const projectName = form.project_name.value.trim() || "Untitled Project";
     
-    // ========== HEADER ==========
     doc.setFontSize(16);
     doc.setFont(undefined, 'bold');
     doc.text("BILL OF QUANTITIES", pageWidth / 2, yOffset, { align: "center" });
@@ -22,7 +21,6 @@ function exportPDF() {
     doc.text(projectName, pageWidth / 2, yOffset, { align: "center" });
     yOffset += 10;
     
-    // ========== PROJECT INFO ==========
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
     
@@ -41,7 +39,6 @@ function exportPDF() {
         ['Date:', new Date().toLocaleDateString()]
     ];
     
-    // Left column
     leftInfo.forEach(([label, value]) => {
         if (value) {
             doc.setFont(undefined, 'bold');
@@ -52,7 +49,6 @@ function exportPDF() {
         }
     });
     
-    // Right column
     infoY = yOffset;
     infoX = pageWidth / 2;
     rightInfo.forEach(([label, value]) => {
@@ -67,26 +63,22 @@ function exportPDF() {
     
     yOffset = Math.max(yOffset + 5, infoY + 5);
     
-    // ========== CATEGORIES & ITEMS ==========
     let itemNumber = 1;
     const categories = document.querySelectorAll('.category-block');
     
     categories.forEach((categoryDiv, catIndex) => {
         const categoryName = categoryDiv.querySelector('h6').textContent;
         
-        // Page break check
         if (yOffset > 250 && catIndex > 0) {
             doc.addPage();
             yOffset = margin;
         }
         
-        // Category title
         doc.setFontSize(11);
         doc.setFont(undefined, 'bold');
         doc.text(categoryName.toUpperCase(), margin, yOffset);
         yOffset += 6;
         
-        // Table data
         const rows = [];
         categoryDiv.querySelectorAll('tbody tr').forEach(row => {
             const cells = row.querySelectorAll('input');
@@ -99,12 +91,11 @@ function exportPDF() {
                 cells[0].value || "",
                 cells[1].value || "",
                 qty.toFixed(2),
-                rate.toFixed(2),    // No symbol
-                amount.toFixed(2)   // No symbol
+                rate.toFixed(2),
+                amount.toFixed(2)
             ]);
         });
         
-        // Create table for this category
         doc.autoTable({
             head: [['No.', 'Description', 'Unit', 'Qty', 'Rate', 'Amount']],
             body: rows,
@@ -130,12 +121,12 @@ function exportPDF() {
                 lineWidth: 0.3
             },
             columnStyles: {
-                0: { halign: 'center', cellWidth: 15, lineWidth: 0.3 },  // No.
-            1: { halign: 'left', cellWidth: 70, lineWidth: 0.3 },    // Description
-            2: { halign: 'center', cellWidth: 20, lineWidth: 0.3 },  // Unit
-            3: { halign: 'right', cellWidth: 20, lineWidth: 0.3 },   // Qty
-            4: { halign: 'right', cellWidth: 25, lineWidth: 0.3 },   // Rate
-            5: { halign: 'right', cellWidth: 30, lineWidth: 0.3 }    // Amount
+                0: { halign: 'center', cellWidth: 15, lineWidth: 0.3 },
+            1: { halign: 'left', cellWidth: 70, lineWidth: 0.3 },
+            2: { halign: 'center', cellWidth: 20, lineWidth: 0.3 },
+            3: { halign: 'right', cellWidth: 20, lineWidth: 0.3 },
+            4: { halign: 'right', cellWidth: 25, lineWidth: 0.3 },
+            5: { halign: 'right', cellWidth: 30, lineWidth: 0.3 }
         },
             didDrawPage: (data) => {
                 yOffset = data.cursor.y + 5;
@@ -145,7 +136,6 @@ function exportPDF() {
         yOffset += 3;
     });
     
-    // ========== TOTALS ==========
     if (yOffset > 220) {
         doc.addPage();
         yOffset = margin;
@@ -156,7 +146,6 @@ function exportPDF() {
     const taxAmount = parseNumber(document.getElementById('taxAmount').textContent);
     const grandTotal = parseNumber(document.getElementById('grandTotal').textContent);
     
-    // Totals table
     const totalsX = pageWidth - margin - 80;
     
     doc.autoTable({
@@ -185,14 +174,13 @@ function exportPDF() {
             1: { halign: 'right', cellWidth: 30, lineWidth: 0.5 }
         },
         willDrawCell: (data) => {
-            if (data.row.index === 2) { // Grand Total row
+            if (data.row.index === 2) {
                 data.cell.styles.fontStyle = 'bold';
                 data.cell.styles.fontSize = 11;
             }
         }
     });
     
-    // ========== FOOTER ==========
     const totalPages = doc.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
@@ -211,7 +199,6 @@ function exportPDF() {
         );
     }
     
-    // ========== SAVE ==========
     const fileName = `${projectName.replace(/[^a-z0-9]/gi, '_')}_BOQ.pdf`;
     doc.save(fileName);
     

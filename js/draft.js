@@ -38,10 +38,8 @@ function saveDraft() {
         data.categories.push(category);
     });
 
-    // Get existing drafts
     let drafts = JSON.parse(localStorage.getItem('boqDrafts') || '[]');
     
-    // Check if draft with same name exists
     const existingIndex = drafts.findIndex(d => d.name === projectName);
     if (existingIndex >= 0) {
         createOverwriteModal(projectName, () => {
@@ -57,10 +55,8 @@ function saveDraft() {
 
     localStorage.setItem('boqDrafts', JSON.stringify(drafts));
     
-    // Show success message
     showNotification(`Draft "${projectName}" saved successfully!`, 'success');
     
-    // Auto-refresh after saving
     setTimeout(() => {
         location.reload();
     }, 1500);
@@ -105,7 +101,6 @@ function createOverwriteModal(projectName, onConfirm) {
 }
 
 function loadDraft() {
-    // Open draft preview modal instead of directly loading
     openDraftPreview();
 }
 
@@ -128,7 +123,7 @@ function loadSelectedDraftByIndex(index) {
     }
     
     const draft = drafts[index];
-    loadSelectedDraft(draft.id); // Use the existing function with ID
+    loadSelectedDraft(draft.id);
 }
 
 function deleteDraftByIndex(index) {
@@ -139,10 +134,9 @@ function deleteDraftByIndex(index) {
     }
     
     const draftId = drafts[index].id;
-    deleteDraft(draftId); // Use the existing function with ID
+    deleteDraft(draftId);
 }
 
-// Keep the original viewDraft function but make it safer
 function viewDraft(draftId) {
     const drafts = JSON.parse(localStorage.getItem('boqDrafts') || '[]');
     const draft = drafts.find(d => d.id === draftId);
@@ -155,9 +149,7 @@ function viewDraft(draftId) {
     createViewDraftModal(draft);
 }
 
-// Extract the modal creation to a separate function
 function createViewDraftModal(draft) {
-    // Create view modal
     const modal = document.createElement('div');
     modal.className = 'modal fade';
     modal.id = 'viewDraftModal';
@@ -237,7 +229,6 @@ function createViewDraftModal(draft) {
     const modalInstance = new bootstrap.Modal(modal);
     modalInstance.show();
     
-    // Add event listener for the Load button
     modal.querySelector('.load-from-view-btn').addEventListener('click', function() {
         const draftId = parseInt(this.getAttribute('data-draft-id'));
         loadSelectedDraft(draftId);
@@ -257,7 +248,6 @@ function openDraftPreview() {
         return;
     }
 
-    // Create modal for draft preview
     const modal = document.createElement('div');
     modal.className = 'modal fade';
     modal.id = 'draftPreviewModal';
@@ -318,13 +308,10 @@ function openDraftPreview() {
 
     document.body.appendChild(modal);
     
-    // Initialize Bootstrap modal
     const modalInstance = new bootstrap.Modal(modal);
     modalInstance.show();
     
-    // Add event listeners AFTER modal is added to DOM
     setTimeout(() => {
-        // View buttons
         modal.querySelectorAll('.view-draft-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const index = parseInt(this.getAttribute('data-draft-index'));
@@ -335,7 +322,6 @@ function openDraftPreview() {
             });
         });
         
-        // Load buttons
         modal.querySelectorAll('.load-draft-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const index = parseInt(this.getAttribute('data-draft-index'));
@@ -346,7 +332,6 @@ function openDraftPreview() {
             });
         });
         
-        // Delete buttons
         modal.querySelectorAll('.delete-draft-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const index = parseInt(this.getAttribute('data-draft-index'));
@@ -354,111 +339,13 @@ function openDraftPreview() {
             });
         });
         
-        // Clear all button
         modal.querySelector('#clearAllDraftsBtn').addEventListener('click', clearAllDrafts);
     }, 100);
     
-    // Remove modal from DOM when hidden
     modal.addEventListener('hidden.bs.modal', function () {
         document.body.removeChild(modal);
     });
 }
-
-// ============ DELETE THE DUPLICATE viewDraft FUNCTION (LINES 300-350) ============
-// Remove this entire second viewDraft function:
-
-/*
-function viewDraft(draftId) {
-    const drafts = JSON.parse(localStorage.getItem('boqDrafts') || '[]');
-    const draft = drafts.find(d => d.id === draftId);
-    
-    if (!draft) return;
-    
-    // Create view modal
-    const modal = document.createElement('div');
-    modal.className = 'modal fade';
-    modal.id = 'viewDraftModal';
-    modal.innerHTML = `
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title"><i class="bi bi-file-text me-2"></i>${draft.name} - Preview</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <h6>Project Information</h6>
-                            <table class="table table-sm">
-                                ${Object.entries(draft.projectInfo).map(([key, value]) => 
-                                    value ? `<tr><td><strong>${key.replace(/_/g, ' ')}:</strong></td><td>${value}</td></tr>` : ''
-                                ).join('')}
-                            </table>
-                        </div>
-                        <div class="col-md-6">
-                            <h6>Summary</h6>
-                            <p>Categories: ${draft.categories.length}</p>
-                            <p>Total Items: ${draft.categories.reduce((sum, cat) => sum + cat.items.length, 0)}</p>
-                            <p>Last Saved: ${new Date(draft.timestamp).toLocaleString()}</p>
-                        </div>
-                    </div>
-                    
-                    <h6>Categories & Items</h6>
-                    ${draft.categories.map(category => `
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <h6 class="mb-0">${category.name}</h6>
-                            </div>
-                            <div class="card-body">
-                                <table class="table table-sm table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>Description</th>
-                                            <th>Unit</th>
-                                            <th>Qty</th>
-                                            <th>Rate</th>
-                                            <th>Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${category.items.map(item => {
-                                            const amount = item.rate * item.qty;
-                                            return `
-                                            <tr>
-                                                <td>${item.description}</td>
-                                                <td>${item.unit}</td>
-                                                <td>${item.qty}</td>
-                                                <td>${formatNumber(item.rate)}</td>
-                                                <td>${formatNumber(amount)}</td>
-                                            </tr>
-                                            `;
-                                        }).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="loadSelectedDraft(${draftId})" data-bs-dismiss="modal">
-                        <i class="bi bi-check-circle me-1"></i> Load This Draft
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(modal);
-    
-    const modalInstance = new bootstrap.Modal(modal);
-    modalInstance.show();
-    
-    modal.addEventListener('hidden.bs.modal', function () {
-        document.body.removeChild(modal);
-    });
-}
-*/
 
 function loadSelectedDraft(draftId) {
     const drafts = JSON.parse(localStorage.getItem('boqDrafts') || '[]');
@@ -469,18 +356,15 @@ function loadSelectedDraft(draftId) {
         return;
     }
 
-    // Clear current form
     const form = document.getElementById('boqForm');
     Object.keys(draft.projectInfo).forEach(key => {
         if (form[key]) form[key].value = draft.projectInfo[key] || '';
     });
 
-    // Clear categories container
     const container = document.getElementById('categoriesContainer');
     container.innerHTML = '';
     window.categoryCount = 0;
 
-    // Recreate categories
     draft.categories.forEach(cat => {
         window.addCategory();
         const categoryDiv = container.lastElementChild;
@@ -495,14 +379,12 @@ function loadSelectedDraft(draftId) {
             inputs[2].value = item.qty;
             inputs[3].value = item.rate;
             
-            // Trigger calculation for this row
             if (inputs[2]) inputs[2].dispatchEvent(new Event('input'));
         });
     });
 
     window.calculateTotals();
     
-    // Close any open modals
     const modals = document.querySelectorAll('.modal');
     modals.forEach(modal => {
         const bsModal = bootstrap.Modal.getInstance(modal);
@@ -513,7 +395,6 @@ function loadSelectedDraft(draftId) {
 }
 
 function deleteDraft(draftId) {
-    // Create confirmation modal
     const confirmModal = document.createElement('div');
     confirmModal.className = 'modal fade';
     confirmModal.id = 'deleteConfirmModal';
@@ -543,14 +424,12 @@ function deleteDraft(draftId) {
     const modalInstance = new bootstrap.Modal(confirmModal);
     modalInstance.show();
     
-    // Handle delete confirmation
     document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
         const draftIdToDelete = parseInt(this.getAttribute('data-draft-id'));
         performDelete(draftIdToDelete);
         modalInstance.hide();
     });
     
-    // Remove modal from DOM when hidden
     confirmModal.addEventListener('hidden.bs.modal', function() {
         document.body.removeChild(confirmModal);
     });
@@ -565,13 +444,11 @@ function performDelete(draftId) {
         drafts.splice(draftIndex, 1);
         localStorage.setItem('boqDrafts', JSON.stringify(drafts));
         
-        // Update the preview table
         const row = document.querySelector(`[data-draft-id="${draftId}"]`);
         if (row) row.remove();
         
         showNotification(`Draft "${draftName}" deleted!`, 'warning');
         
-        // If no drafts left, close modal
         if (drafts.length === 0) {
             const modalEl = document.getElementById('draftPreviewModal');
             if (modalEl) {
@@ -583,7 +460,6 @@ function performDelete(draftId) {
 }
 
 function clearAllDrafts() {
-    // Create confirmation modal for clearing all drafts
     const confirmModal = document.createElement('div');
     confirmModal.className = 'modal fade';
     confirmModal.id = 'clearAllConfirmModal';
@@ -614,13 +490,11 @@ function clearAllDrafts() {
     const modalInstance = new bootstrap.Modal(confirmModal);
     modalInstance.show();
     
-    // Handle clear all confirmation
     document.getElementById('confirmClearAllBtn').addEventListener('click', function() {
         performClearAll();
         modalInstance.hide();
     });
     
-    // Remove modal from DOM when hidden
     confirmModal.addEventListener('hidden.bs.modal', function() {
         document.body.removeChild(confirmModal);
     });
@@ -629,7 +503,6 @@ function clearAllDrafts() {
 function performClearAll() {
     localStorage.removeItem('boqDrafts');
     
-    // Close the main preview modal
     const mainModalEl = document.getElementById('draftPreviewModal');
     if (mainModalEl) {
         const mainModal = bootstrap.Modal.getInstance(mainModalEl);
@@ -640,7 +513,6 @@ function performClearAll() {
 }
 
 function showNotification(message, type = 'info') {
-    // Create notification element
     const notification = document.createElement('div');
     notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
     notification.style.cssText = `
@@ -657,7 +529,6 @@ function showNotification(message, type = 'info') {
     
     document.body.appendChild(notification);
     
-    // Auto-remove after 5 seconds
     setTimeout(() => {
         if (notification.parentNode) {
             notification.remove();
@@ -665,7 +536,6 @@ function showNotification(message, type = 'info') {
     }, 5000);
 }
 
-// Expose globally
 window.saveDraft = saveDraft;
 window.loadDraft = loadDraft;
 window.openDraftPreview = openDraftPreview;

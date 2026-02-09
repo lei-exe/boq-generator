@@ -11,9 +11,7 @@ function formatNumber(value) {
     });
 }
 
-// ============ GLOBAL VARIABLES ============
-let categoryCount = 0;  // ADD THIS LINE
-// ==========================================
+let categoryCount = 0;
 
 const standardCategories = [
     "Concrete Works",
@@ -47,8 +45,8 @@ const standardCategories = [
 const CUSTOM_DATA_STORAGE_KEY = 'boqCustomData';
 
 let customData = {
-    categories: [],  // Custom categories users create
-    descriptions: [] // Custom descriptions users create
+    categories: [],
+    descriptions: []
 };
 
 function showNotification(message, type = 'info') {
@@ -78,18 +76,15 @@ function showNotification(message, type = 'info') {
 function getAllExistingDescriptions() {
     const descriptions = new Set();
     
-    // Get from current BOQ items
     document.querySelectorAll('.item-description').forEach(input => {
         if (input.value) descriptions.add(input.value);
     });
     
-    // Get from pricelist
     if (window.CONSTRUCTION_PRICELIST) {
         window.CONSTRUCTION_PRICELIST.labor.forEach(item => descriptions.add(item.description));
         window.CONSTRUCTION_PRICELIST.materials.forEach(item => descriptions.add(item.description));
     }
     
-    // Get from saved drafts
     try {
         const drafts = JSON.parse(localStorage.getItem('boqDrafts') || '[]');
         drafts.forEach(draft => {
@@ -106,7 +101,6 @@ function getAllExistingDescriptions() {
     return Array.from(descriptions).sort();
 }
 
-// ============ CUSTOM DATA FUNCTIONS ============
 function loadCustomData() {
     try {
         const saved = localStorage.getItem(CUSTOM_DATA_STORAGE_KEY);
@@ -131,13 +125,10 @@ function saveCustomData() {
 function getAllCategories() {
     const categories = new Set();
     
-    // 1. Add standard categories
     standardCategories.forEach(cat => categories.add(cat));
     
-    // 2. Add custom categories
     customData.categories.forEach(cat => categories.add(cat));
     
-    // 3. Add from current BOQ (real-time)
     document.querySelectorAll('.category-block h6').forEach(h6 => {
         if (h6.textContent && h6.textContent.trim()) {
             categories.add(h6.textContent.trim());
@@ -150,18 +141,15 @@ function getAllCategories() {
 function getAllDescriptions() {
     const customDescriptions = new Set();
     
-    // Add custom descriptions (user-added)
     customData.descriptions.forEach(desc => {
         if (desc && desc.trim()) {
             customDescriptions.add(desc.trim());
         }
     });
     
-    // Add from current BOQ items (real-time)
     document.querySelectorAll('.item-description').forEach(input => {
         const value = input.value.trim();
         if (value) {
-            // Check if it's NOT in pricelist
             const isInPricelist = window.CONSTRUCTION_PRICELIST && 
                 [...window.CONSTRUCTION_PRICELIST.labor, ...window.CONSTRUCTION_PRICELIST.materials]
                 .some(item => item.description === value);
@@ -175,13 +163,11 @@ function getAllDescriptions() {
     return Array.from(customDescriptions).sort();
 }
 
-// ============ DROPDOWN REFRESH FUNCTION ============
 function refreshAllDropdowns() {
     console.log('🔄 Refreshing all dropdowns...');
     updateCategoryDropdown();
     updateDescriptionDropdown();
     
-    // Also refresh pricelist if modal is open
     if (window.filterPricelist) {
         setTimeout(() => {
             if (document.getElementById('pricelistSearch')) {
@@ -198,17 +184,14 @@ function initializeDescriptionDatalist() {
         return;
     }
     
-    // Clear datalist
     datalist.innerHTML = '';
     
-    // Add ALL pricelist items FIRST (one-time)
     if (window.CONSTRUCTION_PRICELIST) {
         const allPricelistItems = [
             ...window.CONSTRUCTION_PRICELIST.labor,
             ...window.CONSTRUCTION_PRICELIST.materials
         ];
         
-        // Use Set to avoid duplicates
         const uniqueItems = new Set();
         allPricelistItems.forEach(item => {
             if (item.description && item.description.trim()) {
@@ -216,7 +199,6 @@ function initializeDescriptionDatalist() {
             }
         });
         
-        // Add pricelist items
         Array.from(uniqueItems).sort().forEach(desc => {
             const option = document.createElement('option');
             option.value = desc;
@@ -236,20 +218,16 @@ function updateDescriptionDropdown() {
         return;
     }
     
-    // Get custom descriptions
     const customDescriptions = getAllDescriptions();
     
-    // Remove ONLY custom options (marked with ✩)
     const customOptions = Array.from(datalist.querySelectorAll('option')).filter(opt => {
         return opt.textContent.includes('✩');
     });
     
     customOptions.forEach(opt => opt.remove());
     
-    // Add custom descriptions
     customDescriptions.forEach(desc => {
         if (desc && desc.trim()) {
-            // Check if this option already exists as pricelist item
             const exists = Array.from(datalist.querySelectorAll('option'))
                 .some(opt => opt.value === desc.trim() && !opt.textContent.includes('✩'));
             
@@ -270,7 +248,6 @@ function addToDescriptionDatalist(description) {
     const datalist = document.getElementById('descriptionDatalist');
     if (!datalist) return;
     
-    // Check if already exists
     const exists = Array.from(datalist.querySelectorAll('option'))
         .some(opt => opt.value === description);
     
@@ -287,25 +264,20 @@ function updateCategoryDropdown() {
     const datalist = document.getElementById('categoryOptions');
     if (!datalist) return;
 
-    // Save current input value
     const categoryInput = document.getElementById('newCategoryName');
     const currentValue = categoryInput ? categoryInput.value : '';
 
-    // Clear current options
     datalist.innerHTML = '';
     
-    // Get ALL categories
     const allCategories = getAllCategories();
     
     console.log(`📁 Updating category dropdown with ${allCategories.length} categories`);
     
-    // Add all categories (standard + custom + current)
     allCategories.forEach(cat => {
         if (cat && cat.trim()) {
             const option = document.createElement('option');
             option.value = cat.trim();
             
-            // Mark custom categories with a star
             if (!standardCategories.includes(cat.trim())) {
                 option.textContent = `${cat.trim()} ✩`;
             } else {
@@ -315,7 +287,6 @@ function updateCategoryDropdown() {
         }
     });
     
-    // Restore input value
     if (categoryInput && categoryInput.value !== currentValue) {
         categoryInput.value = currentValue;
     }
@@ -325,7 +296,6 @@ function setupCategoryDropdown() {
     const input = document.getElementById('newCategoryName');
     if (!input) return;
     
-    // Create datalist if not exists
     let datalist = document.getElementById('categoryOptions');
     if (!datalist) {
         datalist = document.createElement('datalist');
@@ -333,28 +303,22 @@ function setupCategoryDropdown() {
         document.body.appendChild(datalist);
     }
     
-    // Load custom data first
     loadCustomData();
     updateCategoryDropdown();
     
-    // Link to input
     input.setAttribute('list', 'categoryOptions');
     
-    // ============ DESKTOP: RIGHT-CLICK + MOBILE: LONG PRESS ============
     setupCustomItemRemoval(input, 'category');
-    // ============ END ============
 }
 
 function addCategory() {
     const categoryInput = document.getElementById('newCategoryName');
     let name = categoryInput.value.trim();
     
-    // If empty, use a default
     if (!name) {
         name = "General Requirements";
     }
     
-    // Don't add duplicate category
     const existingCategories = Array.from(document.querySelectorAll('.category-block h6'))
         .map(h6 => h6.textContent);
     if (existingCategories.includes(name)) {
@@ -362,7 +326,6 @@ function addCategory() {
         return;
     }
 
-    // ✅ SAVE CUSTOM CATEGORY IF NEW
     if (!standardCategories.includes(name) && !customData.categories.includes(name)) {
         customData.categories.push(name);
         saveCustomData();
@@ -409,7 +372,6 @@ function addCategory() {
 `;
 container.appendChild(categoryDiv);
     
-    // CLEAR THE INPUT HERE
     categoryInput.value = '';
     
     showNotification(`Category "${name}" added`, 'success');
@@ -435,23 +397,17 @@ function addItemToCategory(categoryId) {
     `;
     tbody.appendChild(row);
 
-    // Add event listeners for calculation
     row.querySelectorAll('.item-qty, .item-rate').forEach(input => {
         input.addEventListener('input', calculateItemAmount);
     });
 
-    // Get the description input
     const descInput = row.querySelector('.item-description');
     
-    // ============ DESKTOP: RIGHT-CLICK + MOBILE: LONG PRESS ============
     setupCustomItemRemoval(descInput, 'description');
-    // ============ END ============
     
-    // Existing change event for description (for autofill)
     descInput.addEventListener('change', function() {
         const selectedDesc = this.value.trim();
         
-        // If from pricelist, auto-fill unit and rate
         if (window.CONSTRUCTION_PRICELIST && selectedDesc) {
             const allItems = [...window.CONSTRUCTION_PRICELIST.labor, ...window.CONSTRUCTION_PRICELIST.materials];
             const item = allItems.find(i => i.description === selectedDesc);
@@ -463,24 +419,20 @@ function addItemToCategory(categoryId) {
             }
         }
 
-        // ✅ SAVE CUSTOM DESCRIPTION IF NEW
         if (selectedDesc) {
             const isInPricelist = window.CONSTRUCTION_PRICELIST && 
                 [...window.CONSTRUCTION_PRICELIST.labor, ...window.CONSTRUCTION_PRICELIST.materials]
                 .some(item => item.description === selectedDesc);
             
-            // Only save if NOT in pricelist and NOT already saved
             if (!isInPricelist && !customData.descriptions.includes(selectedDesc)) {
                 customData.descriptions.push(selectedDesc);
                 saveCustomData();
                 
-                // Add to datalist immediately
                 addToDescriptionDatalist(selectedDesc);
                 showNotification(`New item "${selectedDesc}" saved for future use!`, 'info');
             }
         }
 
-        // Category suggestion logic (existing code)
         if (selectedDesc) {
             const categoryMap = {
                 'manager': 'Preliminaries',
@@ -686,26 +638,21 @@ function showRefreshConfirmation() {
 function setupCustomItemRemoval(inputElement, type = 'description') {
     let pressTimer = null;
     
-    // ============ DESKTOP: RIGHT-CLICK ============
     inputElement.addEventListener('contextmenu', function(e) {
         e.preventDefault();
         handleItemRemoval(this.value.trim(), e, type);
     });
     
-    // ============ MOBILE: LONG PRESS ============
     inputElement.addEventListener('touchstart', function(e) {
-        // Start long press timer
         pressTimer = setTimeout(() => {
             handleItemRemoval(this.value.trim(), e, type);
             pressTimer = null;
-        }, 800); // 800ms = long press
+        }, 800);
         
-        // Prevent default touch behaviors
         e.preventDefault();
     }, { passive: false });
     
     inputElement.addEventListener('touchend', function() {
-        // Cancel long press if finger lifted
         if (pressTimer) {
             clearTimeout(pressTimer);
             pressTimer = null;
@@ -713,24 +660,22 @@ function setupCustomItemRemoval(inputElement, type = 'description') {
     });
     
     inputElement.addEventListener('touchmove', function() {
-        // Cancel long press if finger moves
         if (pressTimer) {
             clearTimeout(pressTimer);
             pressTimer = null;
         }
     });
     
-    // ============ VISUAL FEEDBACK FOR LONG PRESS ============
     inputElement.addEventListener('touchstart', function() {
-        this.style.backgroundColor = '#f0f8ff'; // Light blue background
+        this.style.backgroundColor = '#f0f8ff';
     });
     
     inputElement.addEventListener('touchend', function() {
-        this.style.backgroundColor = ''; // Reset background
+        this.style.backgroundColor = '';
     });
     
     inputElement.addEventListener('touchmove', function() {
-        this.style.backgroundColor = ''; // Reset background
+        this.style.backgroundColor = '';
     });
 }
 
@@ -751,13 +696,10 @@ function handleItemRemoval(value, event, type) {
     
     if (!isCustomItem) return;
     
-    // Create popup modal
     const confirmDiv = document.createElement('div');
     confirmDiv.className = 'position-fixed bg-white border rounded shadow p-3';
     
-    // Position based on event type
     if (event.type.includes('touch')) {
-        // For touch events
         const touch = event.touches[0] || event.changedTouches[0];
         confirmDiv.style.cssText = `
             top: ${touch.clientY}px;
@@ -767,7 +709,6 @@ function handleItemRemoval(value, event, type) {
             transform: translate(-50%, -120%);
         `;
     } else {
-        // For mouse events
         confirmDiv.style.cssText = `
             top: ${event.clientY}px;
             left: ${event.clientX}px;
@@ -790,7 +731,6 @@ function handleItemRemoval(value, event, type) {
     
     document.body.appendChild(confirmDiv);
     
-    // Remove on confirm
     document.getElementById('confirmRemoveBtn').addEventListener('click', () => {
         if (type === 'description') {
             const index = customData.descriptions.indexOf(value);
@@ -799,7 +739,6 @@ function handleItemRemoval(value, event, type) {
                 saveCustomData();
                 updateDescriptionDropdown();
                 
-                // Also remove from datalist immediately
                 const datalist = document.getElementById('descriptionDatalist');
                 const options = datalist.querySelectorAll('option');
                 options.forEach(opt => {
@@ -817,7 +756,6 @@ function handleItemRemoval(value, event, type) {
                 saveCustomData();
                 updateCategoryDropdown();
                 
-                // Also remove from datalist immediately
                 const datalist = document.getElementById('categoryOptions');
                 const options = datalist.querySelectorAll('option');
                 options.forEach(opt => {
@@ -832,12 +770,10 @@ function handleItemRemoval(value, event, type) {
         document.body.removeChild(confirmDiv);
     });
     
-    // Cancel
     document.getElementById('cancelRemoveBtn').addEventListener('click', () => {
         document.body.removeChild(confirmDiv);
     });
     
-    // Remove popup if clicking/touching outside
     setTimeout(() => {
         const clickOutsideHandler = (e) => {
             if (!confirmDiv.contains(e.target)) {
@@ -851,7 +787,6 @@ function handleItemRemoval(value, event, type) {
     }, 100);
 }
 
-// Expose globally
 window.addCategory = addCategory;
 window.addItemToCategory = addItemToCategory;
 window.removeItem = removeItem;
@@ -869,25 +804,20 @@ window.addToDescriptionDatalist = addToDescriptionDatalist;
 window.initializeDescriptionDatalist = initializeDescriptionDatalist;
 window.refreshAllDropdowns = refreshAllDropdowns;
 window.refreshAllDropdowns = refreshAllDropdowns;
-window.setupCustomItemRemoval = setupCustomItemRemoval; // NEW
-window.handleItemRemoval = handleItemRemoval; // NEW
+window.setupCustomItemRemoval = setupCustomItemRemoval;
+window.handleItemRemoval = handleItemRemoval;
 
-// Update DOMContentLoaded event:
 window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('taxRate').addEventListener('input', calculateTotals);
     
-    // Load custom data
     loadCustomData();
     
-    // Setup category dropdown
     setupCategoryDropdown();
     
-    // Initialize description datalist ONCE (pricelist items)
     setTimeout(() => {
         if (window.CONSTRUCTION_PRICELIST) {
             initializeDescriptionDatalist();
             
-            // Then update with custom items
             setTimeout(() => {
                 updateDescriptionDropdown();
                 console.log('✅ Description dropdown loaded with custom items');
@@ -903,7 +833,6 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }, 300);
     
-    // Refresh dropdowns after everything loads
     setTimeout(() => {
         refreshAllDropdowns();
         console.log('✅ All dropdowns refreshed on page load');
