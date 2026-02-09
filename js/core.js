@@ -340,35 +340,35 @@ function addCategory() {
     categoryDiv.className = 'category-block border rounded p-3';
     categoryDiv.dataset.categoryId = categoryCount;
 
-    categoryDiv.innerHTML = `
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <h6>${name}</h6>
-        <button type="button" class="btn btn-danger btn-sm" onclick="removeCategory(this)">
-            <i class="bi bi-trash me-1"></i> Delete Category
-        </button>
+categoryDiv.innerHTML = `
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h6>${name}</h6>
+    <button type="button" class="btn btn-danger btn-sm" onclick="removeCategory(this)">
+        <i class="bi bi-trash me-1"></i> Delete Category
+    </button>
+</div>
+<div class="table-scroll-container">
+    <div class="table-responsive">
+        <table class="table table-bordered mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Description</th>
+                    <th>Unit</th>
+                    <th>Quantity</th>
+                    <th>Rate (₱)</th>
+                    <th>Amount (₱)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
-    <div class="table-scroll-container">
-        <div class="table-responsive">
-            <table class="table table-bordered mb-2">
-                <thead class="table-light">
-                    <tr>
-                        <th>Description</th>
-                        <th>Unit</th>
-                        <th>Quantity</th>
-                        <th>Rate (₱)</th>
-                        <th>Amount (₱)</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
-    <div class="text-center mt-2">
-        <button type="button" class="btn btn-success btn-sm" onclick="addItemToCategory(${categoryCount})">
-            <i class="bi bi-plus-circle me-1"></i> Add Item
-        </button>
-    </div>
+</div>
+<div class="text-center mt-2">
+    <button type="button" class="btn btn-success btn-sm" onclick="addItemToCategory(${categoryCount})">
+        <i class="bi bi-plus-circle me-1"></i> Add Item
+    </button>
+</div>
 `;
 
 container.appendChild(categoryDiv);
@@ -815,111 +815,93 @@ window.addEventListener('DOMContentLoaded', () => {
     
     setupCategoryDropdown();
     
-setTimeout(function() {
-        console.log('📱 Applying mobile touch fixes...');
+    // ========================
+    // 📱 FIXED MOBILE TOUCH & TABLE ISSUES
+    // ========================
+    setTimeout(function() {
+        console.log('📱 Applying mobile fixes...');
         
         // FIX 1: Make category input more touchable
-        const categoryInput = document.getElementById('newCategory');
+        const categoryInput = document.getElementById('newCategoryName'); // FIXED: Changed from #newCategory
         if (categoryInput) {
-            // Wrap category input in a tappable container
-            const categoryWrapper = document.createElement('div');
-            categoryWrapper.className = 'input-tappable w-100';
-            categoryWrapper.style.cssText = 'position: relative; cursor: text;';
-            
-            categoryInput.parentNode.insertBefore(categoryWrapper, categoryInput);
-            categoryWrapper.appendChild(categoryInput);
-            
-            // Make wrapper tappable
-            categoryWrapper.addEventListener('click', function(e) {
-                if (e.target !== categoryInput) {
-                    categoryInput.focus();
-                }
-            });
-            
-            // Touch events for wrapper
-            categoryWrapper.addEventListener('touchstart', function(e) {
-                categoryInput.focus();
-                e.preventDefault();
-            }, { passive: false });
-            
-            // Make input itself more touchable
+            // Don't wrap in div - just make it bigger
             categoryInput.style.cssText = `
-                min-height: 48px;
-                padding: 12px 15px;
-                font-size: 16px;
-                width: 100%;
-                box-sizing: border-box;
+                min-height: 48px !important;
+                padding: 12px 15px !important;
+                font-size: 16px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
             `;
+            
+            // Simple touch fix
+            categoryInput.addEventListener('touchstart', function(e) {
+                this.focus();
+            }, { passive: true });
         }
         
         // FIX 2: Make description inputs more touchable
-        document.querySelectorAll('.description-input').forEach((input, index) => {
-            // Wrap each description input
-            const wrapper = document.createElement('div');
-            wrapper.className = 'input-tappable w-100';
-            wrapper.style.cssText = 'position: relative; cursor: text;';
-            
-            input.parentNode.insertBefore(wrapper, input);
-            wrapper.appendChild(input);
-            
-            // Make wrapper tappable
-            wrapper.addEventListener('click', function(e) {
-                if (e.target !== input) {
-                    input.focus();
-                }
-            });
-            
-            // Touch events
-            wrapper.addEventListener('touchstart', function(e) {
-                input.focus();
-                e.preventDefault();
-            }, { passive: false });
-            
+        document.querySelectorAll('.item-description').forEach((input, index) => { // FIXED: Changed from .description-input
             // Style the input
             input.style.cssText = `
-                min-height: 44px;
-                padding: 10px 12px;
-                font-size: 16px;
-                width: 100%;
-                box-sizing: border-box;
+                min-height: 44px !important;
+                padding: 10px 12px !important;
+                font-size: 16px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
             `;
             
-            // Force datalist to work on mobile
-            input.addEventListener('focus', function() {
-                // iOS fix for datalist
-                if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
-                    setTimeout(() => {
-                        this.click();
-                    }, 100);
-                }
-            });
+            // Simple touch fix
+            input.addEventListener('touchstart', function(e) {
+                this.focus();
+            }, { passive: true });
         });
         
-        // FIX 3: Make all table inputs more visible
-        document.querySelectorAll('.table input').forEach(input => {
-            input.style.cssText += `
-                font-size: 14px !important;
-                padding: 10px 8px !important;
-                height: auto !important;
-                min-height: 44px;
-            `;
-            
-            // Ensure text is visible
-            input.addEventListener('input', function() {
-                this.style.color = '#212529';
-                this.style.backgroundColor = '#fff';
-            });
-        });
-        
-        // FIX 4: Add scroll indicator for tables
+        // FIX 3: Fix table overflow (SINGLE FIX - not duplicate)
         document.querySelectorAll('.table-scroll-container').forEach(container => {
-            if (container.scrollWidth > container.clientWidth) {
-                // Add scroll hint
+            // Force proper overflow
+            container.style.cssText = `
+                overflow-x: auto !important;
+                max-width: 100% !important;
+                border: 1px solid #dee2e6 !important;
+                border-radius: 4px !important;
+                margin: 10px 0 !important;
+            `;
+            
+            // Make table wider than container to ensure scroll
+            const table = container.querySelector('table');
+            if (table) {
+                table.style.minWidth = '900px !important';
+            }
+            
+            // Fix all inputs inside table
+            container.querySelectorAll('input').forEach(input => {
+                input.style.cssText = `
+                    max-width: 100% !important;
+                    width: 100% !important;
+                    box-sizing: border-box !important;
+                    overflow: hidden !important;
+                    text-overflow: ellipsis !important;
+                    font-size: 14px !important;
+                    padding: 10px 8px !important;
+                    min-height: 44px !important;
+                `;
+            });
+            
+            // Add scroll hint ONLY if not already there
+            if (!container.querySelector('.scroll-hint') && 
+                container.scrollWidth > container.clientWidth) {
                 const hint = document.createElement('div');
                 hint.className = 'scroll-hint';
                 hint.innerHTML = `
-                    <div style="text-align: center; color: #666; font-size: 12px; padding: 5px 0; background: #f8f9fa; border-top: 1px solid #dee2e6;">
-                        <i class="bi bi-arrow-left-right"></i> Scroll horizontally to see all columns
+                    <div style="
+                        text-align: center;
+                        color: #666;
+                        font-size: 12px;
+                        padding: 8px 0;
+                        background: #f8f9fa;
+                        border-top: 1px solid #dee2e6;
+                    ">
+                        <i class="bi bi-arrow-left-right"></i> Scroll horizontally
                     </div>
                 `;
                 container.appendChild(hint);
@@ -927,8 +909,9 @@ setTimeout(function() {
         });
         
         console.log('✅ Mobile fixes applied successfully');
-    }, 1000);
+    }, 1000); // Single timeout, not multiple
 });
+
 
 
 
