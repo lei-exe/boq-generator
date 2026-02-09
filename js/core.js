@@ -362,7 +362,7 @@ function addCategory() {
                 </thead>
                 <tbody></tbody>
             </table>
-    </div>
+        </div>
     </div>
     <div class="text-center mt-2">
         <button type="button" class="btn btn-success btn-sm" onclick="addItemToCategory(${categoryCount})">
@@ -370,6 +370,7 @@ function addCategory() {
         </button>
     </div>
 `;
+
 container.appendChild(categoryDiv);
     
     categoryInput.value = '';
@@ -928,6 +929,7 @@ setTimeout(function() {
         console.log('✅ Mobile fixes applied successfully');
     }, 1000);
 });
+
 
 
 
