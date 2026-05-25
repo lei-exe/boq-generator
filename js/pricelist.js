@@ -352,9 +352,6 @@ function openPricelistModal() {
                             <i class="bi bi-info-circle me-1"></i>
                             Click <span class="badge bg-success">Add to BOQ</span> to insert item
                         </small>
-                        <button type="button" class="btn btn-outline-success btn-sm mt-2 w-100" onclick="addSampleBOQFromPricelist()">
-                            <i class="bi bi-plus-circle me-1"></i>Add 5 Sample Items
-                        </button>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -669,8 +666,8 @@ function addToBOQFromPricelist(itemId) {
     
     let categoryDiv = Array.from(document.querySelectorAll('.category-block'))
         .find(div => {
-            const h6 = div.querySelector('h6');
-            return h6 && h6.textContent === item.category;
+            const titleElement = div.querySelector('.category-block__title') || div.querySelector('h6');
+            return titleElement && titleElement.textContent === item.category;
         });
     
     if (!categoryDiv) {

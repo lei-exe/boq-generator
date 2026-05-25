@@ -49,6 +49,158 @@ let customData = {
     descriptions: []
 };
 
+const CATEGORY_TITLE_SELECTOR = '.category-block__title';
+
+function getCategoryBlocks() {
+    return Array.from(document.querySelectorAll('.category-block'));
+}
+
+function getCategoryTitleElement(categoryDiv) {
+    if (!categoryDiv) return null;
+    return categoryDiv.querySelector(CATEGORY_TITLE_SELECTOR) || categoryDiv.querySelector('h6');
+}
+
+function getCategoryName(categoryDiv) {
+    const titleElement = getCategoryTitleElement(categoryDiv);
+    return titleElement ? titleElement.textContent.trim() : '';
+}
+
+function createCategoryMarkup(name, categoryId) {
+    return `
+<div class="category-block__header">
+    <div class="category-block__title-group">
+        <div>
+            <span class="category-block__eyebrow">Work category</span>
+            <h6 class="category-block__title">${name}</h6>
+        </div>
+        <div class="category-block__stats">
+            <span class="category-stat-pill">
+                <i class="bi bi-list-check"></i>
+                <span class="category-item-count">0 items</span>
+            </span>
+            <span class="category-stat-pill category-stat-pill--accent">
+                PHP <span class="category-total-value">0.00</span>
+            </span>
+        </div>
+    </div>
+    <button type="button" class="btn btn-outline-danger btn-sm category-delete-btn" onclick="removeCategory(this)">
+        <i class="bi bi-trash me-1"></i> Remove
+    </button>
+</div>
+<div class="category-block__table-shell">
+    <div class="table-scroll-container">
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle category-table mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Description</th>
+                        <th>Unit</th>
+                        <th>Quantity</th>
+                        <th>Rate (PHP)</th>
+                        <th>Amount (PHP)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody data-category-id="${categoryId}"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="category-block__footer">
+    <p class="category-block__hint mb-0">Amounts update automatically when quantity or rate changes.</p>
+    <button type="button" class="btn btn-success btn-sm category-add-item-btn" onclick="addItemToCategory(${categoryId})">
+        <i class="bi bi-plus-circle me-1"></i> Add Item
+    </button>
+</div>
+`;
+}
+
+function createItemRowMarkup() {
+    return `
+        <td>
+            <input type="text" 
+                   class="form-control item-description" 
+                   placeholder="Type or select from list" 
+                   list="descriptionDatalist">
+        </td>
+        <td><input type="text" class="form-control item-unit" placeholder="Unit"></td>
+        <td><input type="number" class="form-control item-qty" value="1" min="0" step="0.01"></td>
+        <td><input type="number" class="form-control item-rate" value="0" min="0" step="0.01"></td>
+        <td><input type="text" class="form-control item-amount" value="${formatNumber(0)}" readonly></td>
+        <td>
+            <button type="button" class="btn btn-outline-danger btn-sm item-remove-btn" onclick="removeItem(this)">
+                <i class="bi bi-trash me-1"></i> Remove
+            </button>
+        </td>
+    `;
+}
+
+function updateCategorySummary(categoryDiv) {
+    if (!categoryDiv) return;
+    
+    const itemCount = categoryDiv.querySelectorAll('tbody tr').length;
+    let categoryTotal = 0;
+    
+    categoryDiv.querySelectorAll('.item-amount').forEach(input => {
+        categoryTotal += parseNumber(input.value);
+    });
+    
+    const itemCountElement = categoryDiv.querySelector('.category-item-count');
+    const totalValueElement = categoryDiv.querySelector('.category-total-value');
+    
+    if (itemCountElement) {
+        itemCountElement.textContent = `${itemCount} item${itemCount === 1 ? '' : 's'}`;
+    }
+    
+    if (totalValueElement) {
+        totalValueElement.textContent = formatNumber(categoryTotal);
+    }
+}
+
+function updateCategoriesSectionState() {
+    const categoryBlocks = getCategoryBlocks();
+    const emptyState = document.getElementById('categoriesEmptyState');
+    const countBadge = document.getElementById('categoryCountBadge');
+    
+    if (emptyState) {
+        emptyState.hidden = categoryBlocks.length > 0;
+    }
+    
+    if (countBadge) {
+        countBadge.textContent = `${categoryBlocks.length} categor${categoryBlocks.length === 1 ? 'y' : 'ies'}`;
+    }
+    
+    categoryBlocks.forEach(updateCategorySummary);
+}
+
+function applyTouchFriendlyInputFix(inputElement, proxyContainer) {
+    if (!inputElement || inputElement.dataset.touchFocusReady === 'true') {
+        return;
+    }
+    
+    inputElement.dataset.touchFocusReady = 'true';
+    inputElement.addEventListener('touchstart', function() {
+        this.focus();
+        
+        if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+            setTimeout(() => {
+                this.click();
+            }, 50);
+        }
+    }, { passive: true });
+    
+    const touchTarget = proxyContainer || inputElement.closest('td') || inputElement.parentElement;
+    if (touchTarget && touchTarget !== inputElement && touchTarget.dataset.touchProxyReady !== 'true') {
+        touchTarget.dataset.touchProxyReady = 'true';
+        touchTarget.addEventListener('touchstart', (event) => {
+            if (event.target !== inputElement) {
+                inputElement.focus();
+                inputElement.click();
+            }
+        }, { passive: true });
+    }
+}
+
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
@@ -129,9 +281,10 @@ function getAllCategories() {
     
     customData.categories.forEach(cat => categories.add(cat));
     
-    document.querySelectorAll('.category-block h6').forEach(h6 => {
-        if (h6.textContent && h6.textContent.trim()) {
-            categories.add(h6.textContent.trim());
+    getCategoryBlocks().forEach(categoryDiv => {
+        const categoryName = getCategoryName(categoryDiv);
+        if (categoryName) {
+            categories.add(categoryName);
         }
     });
     
@@ -319,8 +472,7 @@ function addCategory() {
         name = "General Requirements";
     }
     
-    const existingCategories = Array.from(document.querySelectorAll('.category-block h6'))
-        .map(h6 => h6.textContent);
+    const existingCategories = getCategoryBlocks().map(getCategoryName);
     if (existingCategories.includes(name)) {
         showNotification(`Category "${name}" already exists!`, 'warning');
         return;
@@ -337,19 +489,34 @@ function addCategory() {
     const container = document.getElementById('categoriesContainer');
 
     const categoryDiv = document.createElement('div');
-    categoryDiv.className = 'category-block border rounded p-3';
+    categoryDiv.className = 'category-block';
     categoryDiv.dataset.categoryId = categoryCount;
 
 categoryDiv.innerHTML = `
-<div class="d-flex justify-content-between align-items-center mb-2">
-    <h6>${name}</h6>
-    <button type="button" class="btn btn-danger btn-sm" onclick="removeCategory(this)">
-        <i class="bi bi-trash me-1"></i> Delete Category
+<div class="category-block__header">
+    <div class="category-block__title-group">
+        <div>
+            <span class="category-block__eyebrow">Work category</span>
+            <h6 class="category-block__title">${name}</h6>
+        </div>
+        <div class="category-block__stats">
+            <span class="category-stat-pill">
+                <i class="bi bi-list-check"></i>
+                <span class="category-item-count">0 items</span>
+            </span>
+            <span class="category-stat-pill category-stat-pill--accent">
+                PHP <span class="category-total-value">0.00</span>
+            </span>
+        </div>
+    </div>
+    <button type="button" class="btn btn-outline-danger btn-sm category-delete-btn" onclick="removeCategory(this)">
+        <i class="bi bi-trash me-1"></i> Remove
     </button>
 </div>
-<div class="table-scroll-container">
-    <div class="table-responsive">
-        <table class="table table-bordered mb-0">
+<div class="category-block__table-shell">
+    <div class="table-scroll-container">
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle category-table mb-0">
             <thead class="table-light">
                 <tr>
                     <th>Description</th>
@@ -360,20 +527,24 @@ categoryDiv.innerHTML = `
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody></tbody>
+            <tbody data-category-id="${categoryCount}"></tbody>
         </table>
     </div>
 </div>
-<div class="text-center mt-2">
-    <button type="button" class="btn btn-success btn-sm" onclick="addItemToCategory(${categoryCount})">
+</div>
+<div class="category-block__footer">
+    <p class="category-block__hint mb-0">Amounts update automatically when quantity or rate changes.</p>
+    <button type="button" class="btn btn-success btn-sm category-add-item-btn" onclick="addItemToCategory(${categoryCount})">
         <i class="bi bi-plus-circle me-1"></i> Add Item
     </button>
 </div>
 `;
 
-container.appendChild(categoryDiv);
+    categoryDiv.innerHTML = createCategoryMarkup(name, categoryCount);
+    container.appendChild(categoryDiv);
     
     categoryInput.value = '';
+    updateCategoriesSectionState();
     
     showNotification(`Category "${name}" added`, 'success');
 }
@@ -383,23 +554,15 @@ function addItemToCategory(categoryId) {
     const tbody = categoryDiv.querySelector('tbody');
 
     const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>
-            <input type="text" 
-                   class="form-control item-description" 
-                   placeholder="Type or select from list" 
-                   list="descriptionDatalist">
-        </td>
-        <td><input type="text" class="form-control item-unit" placeholder="Unit"></td>
-        <td><input type="number" class="form-control item-qty" value="1" min="0" step="0.01"></td>
-        <td><input type="number" class="form-control item-rate" value="0" min="0" step="0.01"></td>
-        <td><input type="text" class="form-control item-amount" value="0" readonly></td>
-        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">Delete</button></td>
-    `;
+    row.innerHTML = createItemRowMarkup();
     tbody.appendChild(row);
 
     row.querySelectorAll('.item-qty, .item-rate').forEach(input => {
         input.addEventListener('input', calculateItemAmount);
+    });
+
+    row.querySelectorAll('.item-description, .item-unit, .item-qty, .item-rate').forEach(input => {
+        applyTouchFriendlyInputFix(input);
     });
 
     const descInput = row.querySelector('.item-description');
@@ -573,6 +736,7 @@ function calculateTotals() {
     document.getElementById('subtotal').textContent = formatNumber(subtotal);
     document.getElementById('taxAmount').textContent = formatNumber(markupAmount);
     document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
+    updateCategoriesSectionState();
 }
 
 function refreshPage() {
@@ -814,6 +978,7 @@ window.addEventListener('DOMContentLoaded', () => {
     loadCustomData();
     
     setupCategoryDropdown();
+    updateCategoriesSectionState();
     
     // ========================
     // 📱 WORKING MOBILE FIX - KEYBOARD + TOUCH

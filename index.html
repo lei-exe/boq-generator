@@ -80,47 +80,82 @@
                                 </div>
 
                                 <!-- Categories & Items -->
-                                <h5 class="border-bottom pb-2 mb-3">Categories & Items</h5>
-                                <div class="d-flex mb-3">
-                                    <input type="text" 
-                                           id="newCategoryName" 
-                                           class="form-control me-2" 
-                                           list="categoryOptions"
-                                           placeholder="Type or select category...">
-                                    <datalist id="categoryOptions">
-                                        <option value="Preliminaries">
-                                        <option value="General Requirements">
-                                        <option value="Site Preparation">
-                                        <option value="Earthworks">
-                                        <option value="Substructure Works">
-                                        <option value="Concrete Works">
-                                        <option value="Masonry Works">
-                                        <option value="Structural Steel Works">
-                                        <option value="Carpentry">
-                                        <option value="Formwork">
-                                        <option value="Roofing Works">
-                                        <option value="Waterproofing">
-                                        <option value="Insulation">
-                                        <option value="Doors & Windows">
-                                        <option value="Finishing Works">
-                                        <option value="Flooring">
-                                        <option value="Tiling">
-                                        <option value="Painting Works">
-                                        <option value="Plumbing">
-                                        <option value="Sanitary Works">
-                                        <option value="Electrical Works">
-                                        <option value="Mechanical Works (HVAC, Firefighting)">
-                                        <option value="External Works">
-                                        <option value="Landscaping Works">
-                                        <option value="Testing">
-                                        <option value="Commissioning">
-                                    </datalist>
-                                    <button type="button" class="btn btn-primary" onclick="addCategory()">
-                                        <i class="bi bi-plus-circle me-1"></i> Add Category
-                                    </button>
-                                </div>
+                                <div class="boq-builder-section" id="categoriesSection">
+                                    <div class="boq-builder-section__header">
+                                        <div>
+                                            <h5 class="mb-1">Categories & Items</h5>
+                                            <p class="boq-builder-section__description mb-0">
+                                                Group work clearly, add detailed line items, and let the builder handle the calculations.
+                                            </p>
+                                        </div>
+                                        <span class="category-count-badge" id="categoryCountBadge">0 categories</span>
+                                    </div>
 
-                                <div id="categoriesContainer"></div>
+                                    <div class="category-composer">
+                                        <div class="category-composer__body">
+                                            <div class="category-composer__content">
+                                                <div class="category-composer__icon">
+                                                    <i class="bi bi-folder-plus"></i>
+                                                </div>
+                                                <div class="category-composer__copy">
+                                                    <h6 class="mb-1">Add a work category</h6>
+                                                    <p class="mb-0">
+                                                        Choose a standard category or create a custom one. Custom entries are remembered locally in this browser.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div class="category-composer__controls">
+                                                <input type="text"
+                                                       id="newCategoryName"
+                                                       class="form-control category-composer__input"
+                                                       list="categoryOptions"
+                                                       placeholder="Type or select category...">
+                                                <datalist id="categoryOptions">
+                                                    <option value="Preliminaries">
+                                                    <option value="General Requirements">
+                                                    <option value="Site Preparation">
+                                                    <option value="Earthworks">
+                                                    <option value="Substructure Works">
+                                                    <option value="Concrete Works">
+                                                    <option value="Masonry Works">
+                                                    <option value="Structural Steel Works">
+                                                    <option value="Carpentry">
+                                                    <option value="Formwork">
+                                                    <option value="Roofing Works">
+                                                    <option value="Waterproofing">
+                                                    <option value="Insulation">
+                                                    <option value="Doors & Windows">
+                                                    <option value="Finishing Works">
+                                                    <option value="Flooring">
+                                                    <option value="Tiling">
+                                                    <option value="Painting Works">
+                                                    <option value="Plumbing">
+                                                    <option value="Sanitary Works">
+                                                    <option value="Electrical Works">
+                                                    <option value="Mechanical Works (HVAC, Firefighting)">
+                                                    <option value="External Works">
+                                                    <option value="Landscaping Works">
+                                                    <option value="Testing">
+                                                    <option value="Commissioning">
+                                                </datalist>
+                                                <button type="button" class="btn btn-primary category-composer__button" onclick="addCategory()">
+                                                    <i class="bi bi-plus-circle me-1"></i> Add Category
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="categoriesContainer" class="categories-stack">
+                                        <div class="category-empty-state" id="categoriesEmptyState">
+                                            <div class="category-empty-state__icon">
+                                                <i class="bi bi-kanban"></i>
+                                            </div>
+                                            <h6 class="mb-2">No categories added yet</h6>
+                                            <p class="mb-0">Start by adding a category above, then populate it with BOQ line items.</p>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <!-- Totals -->
                                 <div class="total-box">

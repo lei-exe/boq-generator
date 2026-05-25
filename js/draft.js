@@ -22,8 +22,9 @@ function saveDraft() {
     };
 
     document.querySelectorAll('.category-block').forEach(categoryDiv => {
+        const titleElement = categoryDiv.querySelector('.category-block__title') || categoryDiv.querySelector('h6');
         const category = {
-            name: categoryDiv.querySelector('h6').textContent,
+            name: titleElement ? titleElement.textContent : '',
             items: []
         };
         categoryDiv.querySelectorAll('tbody tr').forEach(row => {
@@ -368,7 +369,10 @@ function loadSelectedDraft(draftId) {
     draft.categories.forEach(cat => {
         window.addCategory();
         const categoryDiv = container.lastElementChild;
-        categoryDiv.querySelector('h6').textContent = cat.name;
+        const titleElement = categoryDiv.querySelector('.category-block__title') || categoryDiv.querySelector('h6');
+        if (titleElement) {
+            titleElement.textContent = cat.name;
+        }
 
         cat.items.forEach(item => {
             window.addItemToCategory(parseInt(categoryDiv.dataset.categoryId));
